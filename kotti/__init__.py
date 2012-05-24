@@ -7,11 +7,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
+from zope.interface import implementedBy
 from zope.sqlalchemy import ZopeTransactionExtension
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.events import BeforeRender
+from pyramid.exceptions import ConfigurationError
+from pyramid.interfaces import IRequest, IRouteRequest
 from pyramid.threadlocal import get_current_registry
 from pyramid.util import DottedNameResolver
 from pyramid_beaker import session_factory_from_settings
@@ -19,6 +22,7 @@ from pyramid_beaker import session_factory_from_settings
 import kotti.patches
 kotti.patches   # pyflakes
 
+from kotti.interfaces import ISnippet
 from kotti.sqla import Base as KottiBase
 from kotti.util import request_cache
 
@@ -113,6 +117,20 @@ def main(global_config, **settings):
 def add_snippet(self, snippet=None, **kwargs):
     name = kwargs['name']
     del kwargs['name']
+    route_name = kwargs.get('route_name')
+    request_iface = IRequest
+    if route_name is not None:
+        request_iface = self.registry.queryUtility(IRouteRequest,
+                                                   name=route_name)
+        if request_iface is None:
+            # route configuration should have already happened in
+            # phase 2
+            raise ConfigurationError(
+                'No route named %s found for view registration' %
+                route_name)
+    self.registry.registerAdapter(
+        snippet,
+        (request_iface, implementedBy(kwargs.get('context'))), ISnippet, name)
     self.add_view(view=snippet, name='snippet-%s' % name, **kwargs)
 
 def base_configure(global_config, **settings):

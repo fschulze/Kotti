@@ -1,6 +1,7 @@
 import re
 import urllib
 
+from kotti.interfaces import ISnippet
 from plone.i18n.normalizer import urlnormalizer
 from pyramid.i18n import get_locale_name
 from pyramid.i18n import TranslationStringFactory
@@ -8,6 +9,7 @@ from pyramid.threadlocal import get_current_request
 from pyramid.url import resource_url
 from repoze.lru import LRUCache
 from zope.deprecation import deprecated
+from zope.interface import providedBy
 
 _ = TranslationStringFactory('Kotti')
 
@@ -145,6 +147,12 @@ def camel_case_to_name(text):
     """
     return re.sub(
         r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r'_\1', text).lower()
+
+
+def get_snippets(context, request):
+    return dict(request.registry.adapters.lookupAll(
+        (providedBy(request), providedBy(context)),
+        ISnippet))
 
 
 from kotti.sqla import JsonType
