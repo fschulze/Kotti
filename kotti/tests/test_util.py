@@ -151,3 +151,77 @@ class TestTitleToName(TestCase):
         from kotti.util import disambiguate_name
         assert disambiguate_name(u'foo') == u'foo-1'
         assert disambiguate_name(u'foo-3') == u'foo-4'
+
+
+class TestSnippets(TestCase):
+    def setUp(self):
+        from kotti.views.util import snippet_regexp
+        self.regexp = snippet_regexp
+        self.results = []
+
+    def tearDown(self):
+        del self.results
+
+    def _sub(self, match):
+        infos = match.groupdict()
+        if infos['selfclosing'] is None and infos['content'] is None:
+            return match.group(0)
+        self.results.append(match)
+        return 'matched%s' % len(self.results)
+
+    def test_selfclosing(self):
+        out = self.regexp.sub(self._sub, "slkdfj [foo egg=ham/] slkdfj")
+        assert out == "slkdfj matched1 slkdfj"
+        assert len(self.results) == 1
+        assert self.results[0].groupdict() == {
+            'arguments': ' egg=ham',
+            'content': None,
+            'escapeclose': '',
+            'escapeopen': '',
+            'name': 'foo',
+            'selfclosing': '/'}
+        assert self.results[0].groups() == (
+            '', 'foo', ' egg=ham', '/', None, '')
+
+    def test_normal(self):
+        out = self.regexp.sub(self._sub, "slkdfj [bar egg=ham]Blubber[/bar] slkdfj")
+        assert out == "slkdfj matched1 slkdfj"
+        assert len(self.results) == 1
+        assert self.results[0].groupdict() == {
+            'arguments': ' egg=ham',
+            'content': 'Blubber',
+            'escapeclose': '',
+            'escapeopen': '',
+            'name': 'bar',
+            'selfclosing': None}
+        assert self.results[0].groups() == (
+            '', 'bar', ' egg=ham', None, 'Blubber', '')
+
+    def test_escaped(self):
+        out = self.regexp.sub(self._sub, "slkdfj [[foo egg=ham/]] slkdfj")
+        assert len(self.results) == 1
+        assert self.results[0].groupdict() == {
+            'arguments': ' egg=ham',
+            'content': None,
+            'escapeclose': ']',
+            'escapeopen': '[',
+            'name': 'foo',
+            'selfclosing': '/'}
+        assert self.results[0].groups() == (
+            '[', 'foo', ' egg=ham', '/', None, ']')
+
+    def test_not_selfclosing(self):
+        out = self.regexp.sub(self._sub, "slkdfj [foo egg=ham] slkdfj")
+        assert len(self.results) == 0
+
+    def test_two_not_selfclosing(self):
+        out = self.regexp.sub(self._sub, "slkdfj [foo egg=ham] [bar egg=ham] slkdfj")
+        assert len(self.results) == 0
+
+    def test_non_matching_names(self):
+        out = self.regexp.sub(self._sub, "slkdfj [foo egg=ham]Blubber[/bar] slkdfj")
+        assert len(self.results) == 0
+
+    def test_quotes_in_args(self):
+        out = self.regexp.sub(self._sub, "slkdfj [foo egg='ham/]'/] slkdfj")
+        assert out == "slkdfj matched1'/] slkdfj"
