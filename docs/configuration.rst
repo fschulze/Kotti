@@ -63,6 +63,7 @@ kotti.templates.api          Override ``api`` used by all templates
 kotti.authn_policy_factory   Component used for authentication
 kotti.authz_policy_factory   Component used for authorization
 kotti.session_factory        Component used for sessions
+kotti.caching_policy_chooser Component for choosing the cache header policy
 
 kotti.date_format            Date format to use, default: ``medium``
 kotti.datetime_format        Datetime format to use, default: ``medium``
@@ -100,10 +101,10 @@ Here's an example:
 
 .. _adjust_look_feel:
 
-Adjust the look & feel (``kotti.override_assets``)
+Adjust the look & feel (``kotti.asset_overrides``)
 --------------------------------------------------
 
-In your settings file, set ``kotti.override_assets`` to a list of
+In your settings file, set ``kotti.asset_overrides`` to a list of
 *asset specifications*.  This allows you to set up a directory in your
 package that will mirror Kotti's own and that allows you to override
 Kotti's templates, CSS files and images on a case by case basis.
@@ -264,6 +265,22 @@ Sessions
 The ``kotti.session_factory`` configuration variable allows the
 overriding of the default session factory.  By default, Kotti uses
 ``pyramid_beaker`` for sessions.
+
+Caching
+-------
+
+You can override Kotti's default set of cache headers by changing the
+``kotti.views.cache.caching_policies`` dictionary, which maps policies
+to headers.  E.g. the ``Cache Resource`` entry there caches all static
+resources for 32 days.  You can also choose which responses match to
+which caching policy by overriding Kotti's default cache policy
+chooser through the use of the ``kotti.caching_policy_chooser``
+configuration variable.  The default is:
+
+.. code-block:: ini
+
+  kotti.caching_policy_chooser = kotti.views.cache.default_caching_policy_chooser
+
 
 .. _repoze.tm2: http://pypi.python.org/pypi/repoze.tm2
 .. _SQLAlchemy database URL: http://www.sqlalchemy.org/docs/core/engines.html#database-urls

@@ -1,6 +1,27 @@
 Change History
 ==============
 
+0.7.0 - Unreleased
+------------------
+
+- Add a new 'Image' content type and image scaling, originally from
+  kotti_image_gallery add-on.
+
+- Fix bug with group edit views.
+  See https://github.com/Pylons/Kotti/pull/61
+
+- Add subscriber to set cache headers based on caching rules.
+
+- Move email templates into page templates in
+  ``kotti:templates/email-set-password.pt`` and
+  ``kotti:templates/email-reset-password.pt``.  This is to make them
+  easier to translate and customize.  This deprecates
+  ``kotti.message.send_set_password``.
+
+- Add a 'edit_inhead' slot for stuff that goes into the edit
+  interface's head.  'inhead' is no longer be used in
+  'edit/master.pt'.
+
 0.6.3 - 2012-05-08
 ------------------
 

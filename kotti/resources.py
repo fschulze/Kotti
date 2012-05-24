@@ -31,15 +31,15 @@ from kotti import get_settings
 from kotti import metadata
 from kotti import DBSession
 from kotti import Base
-from kotti.sqla import ACLType
-from kotti.util import _
-from kotti.util import camel_case_to_name
-from kotti.util import JsonType
-from kotti.util import MutationList
-from kotti.util import NestedMutationDict
-from kotti.util import ViewLink
 from kotti.security import PersistentACLMixin
 from kotti.security import view_permitted
+from kotti.sqla import ACLType
+from kotti.sqla import JsonType
+from kotti.sqla import MutationList
+from kotti.sqla import NestedMutationDict
+from kotti.util import _
+from kotti.util import camel_case_to_name
+from kotti.util import ViewLink
 
 
 class ContainerMixin(object, DictMixin):
@@ -367,6 +367,17 @@ class File(Content):
         self.size = size
 
 
+class Image(File):
+
+    id = Column(Integer(), ForeignKey('files.id'), primary_key=True)
+
+    type_info = File.type_info.copy(
+        name=u'Image',
+        title=_(u'Image'),
+        add_view=u'add_image',
+        addable_to=[u'Document', ], )
+
+
 class Settings(Base):
     __tablename__ = 'settings'
 
@@ -407,6 +418,10 @@ def initialize_sql(engine, drop_all=False):
         if 'settings' not in tables:
             tables += ' settings'
         tables = [metadata.tables[name] for name in tables.split()]
+
+    if engine.dialect.name == 'mysql':  # pragma: no cover
+        from sqlalchemy.dialects.mysql.base import LONGBLOB
+        File.__table__.c.data.type = LONGBLOB()
 
     metadata.create_all(engine, tables=tables)
     for populate in get_settings()['kotti.populators']:
