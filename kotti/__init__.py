@@ -110,6 +110,11 @@ def main(global_config, **settings):
     config = base_configure(global_config, **settings)
     return config.make_wsgi_app()
 
+def add_snippet(self, snippet=None, **kwargs):
+    name = kwargs['name']
+    del kwargs['name']
+    self.add_view(view=snippet, name='snippet-%s' % name, **kwargs)
+
 def base_configure(global_config, **settings):
     """Resolve dotted names in settings, include plug-ins and create a
     Configurator.
@@ -147,6 +152,8 @@ def base_configure(global_config, **settings):
 
     config = Configurator(settings=settings)
     config.begin()
+
+    config.add_directive('add_snippet', add_snippet)
 
     config.registry.settings['pyramid.includes'] = pyramid_includes
 
