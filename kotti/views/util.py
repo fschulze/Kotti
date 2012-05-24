@@ -39,6 +39,7 @@ from kotti.views.form import EditFormView
 from kotti.views.slots import slot_events
 
 
+# Regexp based on Wordpress' shortcode implementation
 snippet_regexp = re.compile(
     r'\['                            # Opening bracket
     r'(?P<escapeopen>\[?)'           # 1: Optional second opening bracket for escaping snippets: [[tag]]
