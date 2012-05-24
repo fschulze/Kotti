@@ -1,0 +1,6 @@
+<ul class="snippet-children ${list_class}">
+  <li tal:define="items [i for i in api.list_children(api.context) if i.in_navigation]"
+      tal:repeat="item items">
+    <a href="${api.url(item)}" title="${item.description}">${item.title}</a>
+  </li>
+</ul>
