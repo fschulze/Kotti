@@ -336,6 +336,7 @@ class TemplateAPI(object):
             snippet_request = Request.blank(
                 self.request.path + '/snippet-%s' % infos['name'],
                 POST=urllib.urlencode(arguments))
+            snippet_request.registry = self.request.registry
             result = render_view(
                 self.context,
                 snippet_request,
