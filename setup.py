@@ -30,6 +30,7 @@ install_requires = [
     'pyramid_debugtoolbar',
     'pyramid_deform>=0.2a3',  # language and template path config includeme
     'pyramid_mailer',
+    'pyramid_snippets',
     'pyramid_tm',
     'repoze.lru',
     'sqlalchemy>=0.7.6',  # avoid "Table 'local_groups' is already defined" error
