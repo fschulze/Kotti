@@ -169,6 +169,12 @@ class TestSnippets(TestCase):
         self.results.append(match)
         return 'matched%s' % len(self.results)
 
+    def test_snippet_name_chars(self):
+        out = self.regexp.sub(self._sub, "slkdfj [Moo_foo-2000 egg=ham]Blubber[/Moo_foo-2000] slkdfj")
+        assert out == "slkdfj matched1 slkdfj"
+        assert len(self.results) == 1
+        assert self.results[0].groupdict()['name'] == 'Moo_foo-2000'
+
     def test_selfclosing(self):
         out = self.regexp.sub(self._sub, "slkdfj [foo egg=ham/] slkdfj")
         assert out == "slkdfj matched1 slkdfj"
